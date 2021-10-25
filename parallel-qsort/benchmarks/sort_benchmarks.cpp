@@ -55,7 +55,7 @@ BENCHMARK(BM_sequential_sort)
 BENCHMARK(BM_sort_without_filters)
   ->ArgsProduct({
     benchmark::CreateRange(1000, 10'000'000, 10),
-    {100, 500, 1000, 1500}
+    {10'000, 1'000'000, 3'000'000}
   })
   ->ArgNames({"size", "block_size"})
   ->Unit(benchmark::kMillisecond);
@@ -63,7 +63,7 @@ BENCHMARK(BM_sort_without_filters)
 BENCHMARK(BM_sort_with_sequential_filter)
   ->ArgsProduct({
     benchmark::CreateRange(1000, 10'000'000, 10),
-    {100, 500, 1000, 1500}
+    {10'000, 1'000'000, 3'000'000}
   })
   ->ArgNames({"size", "block_size"})
   ->Unit(benchmark::kMillisecond);
@@ -71,7 +71,7 @@ BENCHMARK(BM_sort_with_sequential_filter)
 BENCHMARK(BM_sort_with_parallel_filter)
   ->ArgsProduct({
     benchmark::CreateRange(1000, 10'000'000, 10),
-    {100, 500, 1000, 1500}
+    {10'000, 1'000'000, 3'000'000}
   })
   ->ArgNames({"size", "block_size"})
   ->Unit(benchmark::kMillisecond);
