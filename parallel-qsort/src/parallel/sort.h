@@ -4,6 +4,7 @@
 #include "src/sequential/filter.h"
 #include "src/raw_array.h"
 #include "src/sequential/sort.h"
+#include "src/parallel/filter.h"
 
 namespace par {
 
@@ -38,8 +39,8 @@ void copy(const raw_array<T>& src, size_t dst_start_pos, raw_array<T>& dst, size
   }
 }
 
-template<typename T, typename G>
-void do_sort_with_sequential_filter(raw_array<T>& arr, size_t block_size, G& rand_gen) {
+template<typename T, typename G, typename F>
+void do_sort_with_filter(raw_array<T>& arr, const F& filter_func, size_t block_size, G& rand_gen) {
   if (arr.size() <= block_size) {
     if (arr.size() > 1) {
       seq::detail::do_sort(arr, 0, arr.size() - 1, rand_gen);
@@ -51,13 +52,13 @@ void do_sort_with_sequential_filter(raw_array<T>& arr, size_t block_size, G& ran
   T const& partitioner = arr[p_idx_distribution(rand_gen)];
 
 
-  auto less = cilk_spawn seq::filter(arr, [partitioner](const T& x) { return x < partitioner; });
-  auto equal = cilk_spawn seq::filter(arr, [partitioner](const T& x) { return x == partitioner; });
-  auto greater = seq::filter(arr, [partitioner](const T& x) { return x > partitioner; });
+  auto less = cilk_spawn filter_func(arr, [partitioner](const T& x) { return x < partitioner; }, blocks_cnt);
+  auto equal = cilk_spawn filter_func(arr, [partitioner](const T& x) { return x == partitioner; }, blocks_cnt);
+  auto greater = filter_func(arr, [partitioner](const T& x) { return x > partitioner; }, blocks_cnt);
   cilk_sync;
 
-  cilk_spawn do_sort_with_sequential_filter(less, block_size, rand_gen);
-  do_sort_with_sequential_filter(greater, block_size, rand_gen);
+  cilk_spawn do_sort_with_filter(less, filter_func, block_size, rand_gen);
+  do_sort_with_filter(greater, filter_func, block_size, rand_gen);
   cilk_sync;
 
   cilk_spawn copy(less, 0, arr, blocks_cnt);
@@ -77,7 +78,27 @@ void sort_without_filters(raw_array<T>& arr, size_t block_size) {
 template<typename T>
 void sort_with_sequential_filter(raw_array<T>& arr, size_t block_size) {
   std::default_random_engine engine(time(nullptr));
-  detail::do_sort_with_sequential_filter(arr, block_size, engine);
+  detail::do_sort_with_filter(
+      arr,
+      [](const raw_array<T>& src, const auto& p, size_t /*blocks_cnt*/) {
+        return seq::filter(src, p);
+      },
+      block_size,
+      engine
+  );
+}
+
+template<typename T>
+void sort_with_parallel_filter(raw_array<T>& arr, size_t block_size) {
+  std::default_random_engine engine(time(nullptr));
+  detail::do_sort_with_filter(
+      arr,
+      [](const raw_array<T>& src, const auto& p, size_t blocks_cnt) { // you can't just pass template function as param
+        return par::filter(src, p, blocks_cnt);
+      },
+      block_size,
+      engine
+  );
 }
 
 }

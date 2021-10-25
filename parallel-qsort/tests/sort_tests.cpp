@@ -41,6 +41,10 @@ TEST(simple, parallel_sort_with_sequential_filter) {
   simple_test([](raw_array<int32_t>& arr) { par::sort_with_sequential_filter(arr, 2); });
 }
 
+TEST(simple, parallel_sort_with_parallel_filter) {
+  simple_test([](raw_array<int32_t>& arr) { par::sort_with_parallel_filter(arr, 2); });
+}
+
 TEST(stress, sequential_sort) {
   stress_test([](raw_array<int32_t>& arr) { seq::sort(arr); });
 }
@@ -51,4 +55,8 @@ TEST(stress, parallel_sort_without_filters) {
 
 TEST(stress, parallel_sort_with_sequential_filter) {
   stress_test([](raw_array<int32_t>& arr) { par::sort_with_sequential_filter(arr, 500); });
+}
+
+TEST(stress, parallel_sort_with_parallel_filter) {
+  stress_test([](raw_array<int32_t>& arr) { par::sort_with_parallel_filter(arr, 1000); });
 }

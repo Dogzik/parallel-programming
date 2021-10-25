@@ -1,6 +1,6 @@
 #pragma once
 
-#pragma once
+#include "src/sequential/scan.h"
 
 namespace par {
 
