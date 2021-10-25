@@ -9,6 +9,7 @@
 #include "src/sequential/filter.h"
 #include "src/parallel/map.h"
 #include "src/parallel/scan.h"
+#include "src/parallel/filter.h"
 
 namespace {
 
@@ -127,6 +128,24 @@ TEST(stress, sequential_filter) {
   test_filter(
       [](const raw_array<int32_t>& src, const auto& p) {
         return seq::filter(src, p);
+      },
+      false
+  );
+}
+
+TEST(simple, parallel_filter) {
+  test_filter(
+      [](const raw_array<int32_t>& src, const auto& p) {
+        return par::filter(src, p, 2);
+      },
+      true
+  );
+}
+
+TEST(stress, parallel_filter) {
+  test_filter(
+      [](const raw_array<int32_t>& src, const auto& p) {
+        return par::filter(src, p, 100);
       },
       false
   );
