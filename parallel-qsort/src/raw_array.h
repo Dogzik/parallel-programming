@@ -23,6 +23,13 @@ public:
     }
   }
 
+  template<class It>
+  raw_array(It begin, It end) : raw_array(std::distance(begin, end)) {
+    for (size_t i = 0; i < size_; ++i) {
+      emplace_at(i, begin[i]);
+    }
+  }
+
   raw_array(raw_array<T> const& other)
       : size_(other.size_), data_(nullptr) {
     if (size_ > 0) {

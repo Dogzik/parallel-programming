@@ -6,10 +6,10 @@
 
 namespace par {
 
-template<typename T, typename F>
-raw_array<T> map(const raw_array<T>& src, F const& mapper, size_t blocks_cnt) {
+template<typename U, typename T, typename F>
+raw_array<U> map(const raw_array<T>& src, F const& mapper, size_t blocks_cnt) {
   assert(blocks_cnt >= 1);
-  raw_array<T> res(src.size());
+  raw_array<U> res(src.size());
   size_t block_size = (src.size() + blocks_cnt - 1) / blocks_cnt;
   #pragma cilk grainsize 1
   cilk_for(size_t i = 0; i < blocks_cnt; ++i) {
